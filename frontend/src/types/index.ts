@@ -24,6 +24,50 @@ export interface UpdateProblemRequest extends Partial<CreateProblemRequest> {
   id: string;
 }
 
+export interface FilterPreset {
+  id: string;
+  name: string;
+  filter: ProblemFilter;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProblemFilter {
+  search: string;
+  difficulty: string; // 'all' | 'easy' | 'medium' | 'hard'
+  tag: string;
+}
+
+export const DEFAULT_PROBLEM_FILTER: ProblemFilter = {
+  search: '',
+  difficulty: 'all',
+  tag: '',
+};
+
+export const isProblemFilterEmpty = (filter: ProblemFilter): boolean =>
+  !filter.search && filter.difficulty === 'all' && !filter.tag;
+
+export const isSameProblemFilter = (a: ProblemFilter, b: ProblemFilter): boolean =>
+  a.search === b.search && a.difficulty === b.difficulty && a.tag === b.tag;
+
+export const matchProblemFilter = (problem: Problem, filter: ProblemFilter): boolean => {
+  if (filter.difficulty !== 'all' && problem.difficulty !== filter.difficulty) {
+    return false;
+  }
+  if (filter.tag && !problem.tags.includes(filter.tag)) {
+    return false;
+  }
+  if (filter.search) {
+    const query = filter.search.toLowerCase();
+    return (
+      problem.title.toLowerCase().includes(query) ||
+      problem.description.toLowerCase().includes(query) ||
+      problem.tags.some(t => t.toLowerCase().includes(query))
+    );
+  }
+  return true;
+};
+
 export interface DifficultyTag {
   value: 'easy' | 'medium' | 'hard';
   label: string;
